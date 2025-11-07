@@ -31,85 +31,66 @@ const CLASSROOM_LATLNG = leaflet.latLng(
   -122.05703507501151,
 );
 
-// Tunable gameplay parameters
-const GAMEPLAY_ZOOM_LEVEL = 19;
-const TILE_DEGREES = 1e-4;
-const NEIGHBORHOOD_SIZE = 8;
-const CACHE_SPAWN_PROBABILITY = 0.1;
+let heldToken: number | null = null;
 
 // Create the map (element with id "map" is defined in index.html)
-const map = leaflet.map(mapDiv, {
-  center: CLASSROOM_LATLNG,
-  zoom: GAMEPLAY_ZOOM_LEVEL,
-  minZoom: GAMEPLAY_ZOOM_LEVEL,
-  maxZoom: GAMEPLAY_ZOOM_LEVEL,
-  zoomControl: false,
-  scrollWheelZoom: false,
-});
-
-// Populate the map with a background tile layer
+const map = leaflet.map("map").setView(CLASSROOM_LATLNG, 18);
 leaflet
-  .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  })
+  .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
   .addTo(map);
 
-// Add a marker to represent the player
-const playerMarker = leaflet.marker(CLASSROOM_LATLNG);
-playerMarker.bindTooltip("That's you!");
-playerMarker.addTo(map);
+const CELL_SIZE = 0.0001;
 
-// Display the player's points
-let playerPoints = 0;
-statusPanelDiv.innerHTML = "No points yet...";
+function drawGrid(centerLat: number, centerLng: number) {
+  const rows = 5, cols = 5;
+  for (let i = -rows; i <= rows; i++) {
+    for (let j = -cols; j <= cols; j++) {
+      const cellLat = centerLat + i * CELL_SIZE;
+      const cellLng = centerLng + j * CELL_SIZE;
+      const bounds = leaflet.latLngBounds(
+        [cellLat, cellLng],
+        [cellLat + CELL_SIZE, cellLng + CELL_SIZE],
+      );
 
-// Add caches to the map by cell numbers
-function spawnCache(i: number, j: number) {
-  // Convert cell numbers into lat/lng bounds
-  const origin = CLASSROOM_LATLNG;
-  const bounds = leaflet.latLngBounds([
-    [origin.lat + i * TILE_DEGREES, origin.lng + j * TILE_DEGREES],
-    [origin.lat + (i + 1) * TILE_DEGREES, origin.lng + (j + 1) * TILE_DEGREES],
-  ]);
+      // ✅ Use integer grid indices for deterministic luck
+      if (hasToken(i, j)) {
+        const rect = leaflet.rectangle(bounds, { color: "blue" }).addTo(map);
+        rect.on("click", () => {
+          console.log("Cell clicked!", i, j);
+          if (heldToken !== null) {
+            //change later
+            heldToken++;
+            updateInventory();
+            checkWin();
+            rect.remove();
+          } else {
+            heldToken = 1;
+            updateInventory();
+            checkWin();
+            rect.remove();
+          }
+        });
+      }
+    }
+  }
+}
+drawGrid(36.9979, -122.0570);
 
-  // Add a rectangle to the map to represent the cache
-  const rect = leaflet.rectangle(bounds);
-  rect.addTo(map);
-
-  // Handle interactions with the cache
-  rect.bindPopup(() => {
-    // Each cache has a random point value, mutable by the player
-    let pointValue = Math.floor(luck([i, j, "initialValue"].toString()) * 100);
-
-    // The popup offers a description and button
-    const popupDiv = document.createElement("div");
-    popupDiv.innerHTML = `
-                <div>There is a cache here at "${i},${j}". It has value <span id="value">${pointValue}</span>.</div>
-                <button id="poke">poke</button>`;
-
-    // Clicking the button decrements the cache's value and increments the player's points
-    popupDiv
-      .querySelector<HTMLButtonElement>("#poke")!
-      .addEventListener("click", () => {
-        pointValue--;
-        popupDiv.querySelector<HTMLSpanElement>("#value")!.innerHTML =
-          pointValue.toString();
-        playerPoints++;
-        statusPanelDiv.innerHTML = `${playerPoints} points accumulated`;
-      });
-
-    return popupDiv;
-  });
+function hasToken(i: number, j: number): boolean {
+  return luck(`cell-${i}-${j}`) < 0.3;
 }
 
-// Look around the player's neighborhood for caches to spawn
-for (let i = -NEIGHBORHOOD_SIZE; i < NEIGHBORHOOD_SIZE; i++) {
-  for (let j = -NEIGHBORHOOD_SIZE; j < NEIGHBORHOOD_SIZE; j++) {
-    // If location i,j is lucky enough, spawn a cache!
-    if (luck([i, j].toString()) < CACHE_SPAWN_PROBABILITY) {
-      spawnCache(i, j);
-    }
+const inventoryEl = document.createElement("div");
+inventoryEl.id = "inventory";
+inventoryEl.textContent = heldToken ? `Held: ${heldToken}` : "Held: none";
+document.body.appendChild(inventoryEl);
+
+function updateInventory() {
+  inventoryEl.textContent = heldToken ? `Held: ${heldToken}` : "Held: none";
+}
+
+function checkWin() {
+  if (heldToken !== null && heldToken >= 8) {
+    statusPanelDiv.textContent = "🎉 You win! Token value: " + heldToken;
   }
 }
