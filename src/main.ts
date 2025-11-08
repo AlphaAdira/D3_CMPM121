@@ -32,17 +32,31 @@ const CLASSROOM_LATLNG = leaflet.latLng(
 );
 
 let heldToken: number | null = null;
+const GAMEPLAY_ZOOM_LEVEL = 19;
 
 // Create the map (element with id "map" is defined in index.html)
-const map = leaflet.map("map").setView(CLASSROOM_LATLNG, 18);
+const map = leaflet.map(mapDiv, {
+  center: CLASSROOM_LATLNG,
+  zoom: GAMEPLAY_ZOOM_LEVEL,
+  minZoom: GAMEPLAY_ZOOM_LEVEL,
+  maxZoom: GAMEPLAY_ZOOM_LEVEL,
+  zoomControl: false,
+  scrollWheelZoom: false,
+});
+
+// Populate the map with a background tile layer
 leaflet
-  .tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+  .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  })
   .addTo(map);
 
 const CELL_SIZE = 0.0001;
 
 function drawGrid(centerLat: number, centerLng: number) {
-  const rows = 5, cols = 5;
+  const rows = 10, cols = 30;
   for (let i = -rows; i <= rows; i++) {
     for (let j = -cols; j <= cols; j++) {
       const cellLat = centerLat + i * CELL_SIZE;
