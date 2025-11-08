@@ -26,7 +26,7 @@ statusPanelDiv.id = "statusPanel";
 document.body.append(statusPanelDiv);
 
 // Our classroom location
-const CLASSROOM_LATLNG = leaflet.latLng(
+const START_LATLNG = leaflet.latLng(
   36.997936938057016,
   -122.05703507501151,
 );
@@ -36,7 +36,7 @@ const GAMEPLAY_ZOOM_LEVEL = 19;
 
 // Create the map (element with id "map" is defined in index.html)
 const map = leaflet.map(mapDiv, {
-  center: CLASSROOM_LATLNG,
+  center: START_LATLNG,
   zoom: GAMEPLAY_ZOOM_LEVEL,
   minZoom: GAMEPLAY_ZOOM_LEVEL,
   maxZoom: GAMEPLAY_ZOOM_LEVEL,
@@ -54,6 +54,10 @@ leaflet
   .addTo(map);
 
 const CELL_SIZE = 0.0001;
+
+const playerMarker = leaflet.marker(START_LATLNG);
+playerMarker.bindTooltip("YOU");
+playerMarker.addTo(map);
 
 function drawGrid(centerLat: number, centerLng: number) {
   const rows = 10, cols = 30;
