@@ -2,7 +2,7 @@
 
 # Game Design Vision
 
-...
+The player gets dropped into an adventure game. They need to collect [tokens] from around the map to feul [energy pockets] around their base area. (crafting will be add tokens to the pocket to upgrade the pocket. pocket cannot move. potential other crafting thing: combining tokens so player can carry more. maybe they can carry as many full energy pockets they have.)
 
 # Technologies
 

@@ -27,8 +27,8 @@ document.body.append(statusPanelDiv);
 
 // Our classroom location
 const START_LATLNG = leaflet.latLng(
-  36.997936938057016,
-  -122.05703507501151,
+  33.908446206094084,
+  -118.35886037575585,
 );
 
 let heldToken: number | null = null;
@@ -72,7 +72,8 @@ function drawGrid(centerLat: number, centerLng: number) {
 
       // ✅ Use integer grid indices for deterministic luck
       if (hasToken(i, j)) {
-        const rect = leaflet.rectangle(bounds, { color: "blue" }).addTo(map);
+        const rect = leaflet.rectangle(bounds).addTo(map);
+
         rect.on("click", () => {
           console.log("Cell clicked!", i, j);
           if (heldToken !== null) {
@@ -92,7 +93,8 @@ function drawGrid(centerLat: number, centerLng: number) {
     }
   }
 }
-drawGrid(36.9979, -122.0570);
+
+drawGrid(START_LATLNG.lat, START_LATLNG.lng);
 
 function hasToken(i: number, j: number): boolean {
   return luck(`cell-${i}-${j}`) < 0.3;
