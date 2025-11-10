@@ -96,7 +96,7 @@ function drawGrid(centerLat: number, centerLng: number) {
             console.log("Cell clicked!", i, j);
             if (heldToken !== null) {
               aToken.value += heldToken;
-              heldToken = 0;
+              heldToken = null;
               updateInventory();
               const labelSpan = aToken.marker.getElement()?.querySelector(
                 "span",
