@@ -155,7 +155,7 @@ function updateInventory() {
 }
 
 function checkWin() {
-  if (heldToken !== null && heldToken >= 8) {
+  if (heldToken !== null && heldToken >= 12) {
     statusPanelDiv.textContent = "🎉 You win! Token value: " + heldToken;
   }
 }
