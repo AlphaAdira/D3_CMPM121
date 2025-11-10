@@ -10,3 +10,13 @@
   width: 100%;
   height: 80vh;
 }
+
+.token-icon {
+  color: black;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 10px; /* match iconSize */
+  width: 10px;
+  pointer-events: none; /* so it doesn't block clicks */
+}

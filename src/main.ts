@@ -73,22 +73,30 @@ function drawGrid(centerLat: number, centerLng: number) {
       // ✅ Use integer grid indices for deterministic luck
       if (hasToken(i, j)) {
         const rect = leaflet.rectangle(bounds).addTo(map);
-
-        rect.on("click", () => {
-          console.log("Cell clicked!", i, j);
-          if (heldToken !== null) {
-            //change later
-            heldToken++;
-            updateInventory();
-            checkWin();
-            rect.remove();
-          } else {
-            heldToken = 1;
-            updateInventory();
-            checkWin();
-            rect.remove();
-          }
-        });
+        const tokenValue = 1; // For now, all tokens are 1
+        const tokenMarker = leaflet.marker([cellLat, cellLng], {
+          icon: leaflet.divIcon({
+            html: `<span>${tokenValue}</span>`,
+            className: "token-icon",
+            iconSize: [30, 30],
+            iconAnchor: [10, 20], // centers the label
+          }),
+        }).addTo(map);
+        const distance = Math.max(Math.abs(i), Math.abs(j));
+        if (distance <= 3) {
+          rect.on("click", () => {
+            console.log("Cell clicked!", i, j);
+            if (heldToken !== null) {
+              console.log("player is already holding something");
+            } else {
+              heldToken = 1;
+              updateInventory();
+              checkWin();
+              rect.remove();
+              tokenMarker.remove();
+            }
+          });
+        }
       }
     }
   }
@@ -106,7 +114,9 @@ inventoryEl.textContent = heldToken ? `Held: ${heldToken}` : "Held: none";
 document.body.appendChild(inventoryEl);
 
 function updateInventory() {
-  inventoryEl.textContent = heldToken ? `Held: ${heldToken}` : "Held: none";
+  inventoryEl.textContent = heldToken
+    ? `Held: Token with value of ${heldToken}`
+    : "Held: none";
 }
 
 function checkWin() {

@@ -22,7 +22,8 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] Set up Leaflet map
 - [x] Draw grid of cells
 - [x] Add inventory display
-- [ ] Show tokens on cells
+- [x] Show tokens on cells
 - [x] Make cells clickable
+- [x] Pick up range
 - [ ] Implement pickup & crafting
 - [x] Add win condition
