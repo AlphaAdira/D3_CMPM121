@@ -25,5 +25,5 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] Show tokens on cells
 - [x] Make cells clickable
 - [x] Pick up range
-- [ ] Implement pickup & crafting
+- [x] Implement pickup & crafting
 - [x] Add win condition

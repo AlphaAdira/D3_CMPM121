@@ -68,18 +68,12 @@ const reachableBounds = leaflet.latLngBounds(
 );
 
 // Draw the visibility box
-const reachRect = leaflet.rectangle(reachableBounds, {
+leaflet.rectangle(reachableBounds, {
   color: "white",
   weight: 2,
   fillOpacity: 0.1,
   dashArray: "8, 8", // dotted line
 }).addTo(map);
-
-// Optional: add label
-reachRect.bindTooltip("Interaction zone (3 cells)", {
-  permanent: false,
-  direction: "center",
-});
 
 const playerMarker = leaflet.marker(START_LATLNG);
 playerMarker.bindTooltip("YOU");
@@ -91,7 +85,7 @@ interface Token {
   marker: leaflet.Marker;
 }
 
-function drawGrid(centerLat: number, centerLng: number) {
+function addTokens(centerLat: number, centerLng: number) {
   const rows = 10, cols = 30;
   for (let i = -rows; i <= rows; i++) {
     for (let j = -cols; j <= cols; j++) {
@@ -116,8 +110,7 @@ function drawGrid(centerLat: number, centerLng: number) {
             }),
           }).addTo(map),
         };
-        const distance = Math.max(Math.abs(i), Math.abs(j));
-        if (distance <= REACH) {
+        if (i >= -REACH && i < REACH && j >= -REACH && j < REACH) {
           aToken.marker.on("click", () => {
             console.log("Cell clicked!", i, j);
             if (heldToken !== null) {
@@ -144,7 +137,7 @@ function drawGrid(centerLat: number, centerLng: number) {
   }
 }
 
-drawGrid(START_LATLNG.lat, START_LATLNG.lng);
+addTokens(START_LATLNG.lat, START_LATLNG.lng);
 
 function hasToken(i: number, j: number): boolean {
   return luck(`cell-${i}-${j}`) < 0.3; //amount of tokens
