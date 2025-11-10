@@ -85,14 +85,14 @@ function drawGrid(centerLat: number, centerLng: number) {
             icon: leaflet.divIcon({
               html: `<span>1</span>`,
               className: "token-icon",
-              iconSize: [30, 30],
-              iconAnchor: [15, 15],
+              iconSize: [40, 50],
+              iconAnchor: [0, 50],
             }),
           }).addTo(map),
         };
         const distance = Math.max(Math.abs(i), Math.abs(j));
         if (distance <= 3) {
-          aToken.rect.on("click", () => {
+          aToken.marker.on("click", () => {
             console.log("Cell clicked!", i, j);
             if (heldToken !== null) {
               aToken.value += heldToken;
