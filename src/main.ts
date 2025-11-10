@@ -59,6 +59,12 @@ const playerMarker = leaflet.marker(START_LATLNG);
 playerMarker.bindTooltip("YOU");
 playerMarker.addTo(map);
 
+interface Token {
+  value: number;
+  rect: leaflet.Rectangle;
+  marker: leaflet.Marker;
+}
+
 function drawGrid(centerLat: number, centerLng: number) {
   const rows = 10, cols = 30;
   for (let i = -rows; i <= rows; i++) {
@@ -72,28 +78,38 @@ function drawGrid(centerLat: number, centerLng: number) {
 
       // ✅ Use integer grid indices for deterministic luck
       if (hasToken(i, j)) {
-        const rect = leaflet.rectangle(bounds).addTo(map);
-        const tokenValue = 1; // For now, all tokens are 1
-        const tokenMarker = leaflet.marker([cellLat, cellLng], {
-          icon: leaflet.divIcon({
-            html: `<span>${tokenValue}</span>`,
-            className: "token-icon",
-            iconSize: [30, 30],
-            iconAnchor: [10, 20], // centers the label
-          }),
-        }).addTo(map);
+        const aToken: Token = {
+          value: 1,
+          rect: leaflet.rectangle(bounds).addTo(map),
+          marker: leaflet.marker([cellLat, cellLng], {
+            icon: leaflet.divIcon({
+              html: `<span>1</span>`,
+              className: "token-icon",
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
+            }),
+          }).addTo(map),
+        };
         const distance = Math.max(Math.abs(i), Math.abs(j));
         if (distance <= 3) {
-          rect.on("click", () => {
+          aToken.rect.on("click", () => {
             console.log("Cell clicked!", i, j);
             if (heldToken !== null) {
-              console.log("player is already holding something");
+              aToken.value += heldToken;
+              heldToken = 0;
+              updateInventory();
+              const labelSpan = aToken.marker.getElement()?.querySelector(
+                "span",
+              );
+              if (labelSpan) {
+                labelSpan.innerHTML = aToken.value.toString();
+              }
             } else {
-              heldToken = 1;
+              heldToken = aToken.value;
               updateInventory();
               checkWin();
-              rect.remove();
-              tokenMarker.remove();
+              aToken.rect.remove();
+              aToken.marker.remove();
             }
           });
         }
