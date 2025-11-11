@@ -36,6 +36,6 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 
 ---
 
-- [ ] Edit crafting (one item that cant be crafted with until later)
+- [x] Edit crafting (items can't craft with EVERYTHING)
 - [ ] Edit craftable items (no longer rectangles with numbers)
 - [ ] Edit spawn frequencies of tokens

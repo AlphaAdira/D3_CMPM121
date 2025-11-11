@@ -75,9 +75,9 @@ leaflet.rectangle(reachableBounds, {
   dashArray: "8, 8", // dotted line
 }).addTo(map);
 
-const playerMarker = leaflet.marker(START_LATLNG);
-playerMarker.bindTooltip("YOU");
-playerMarker.addTo(map);
+const orginMarker = leaflet.marker(START_LATLNG);
+orginMarker.bindTooltip("orgin");
+orginMarker.addTo(map);
 
 interface Token {
   value: number;
@@ -113,9 +113,22 @@ function addTokens(centerLat: number, centerLng: number) {
         if (i >= -REACH && i < REACH && j >= -REACH && j < REACH) {
           aToken.marker.on("click", () => {
             console.log("Cell clicked!", i, j);
-            if (heldToken !== null) {
+            if (heldToken !== null && heldToken == aToken.value) {
               aToken.value += heldToken;
               heldToken = null;
+              updateInventory();
+              const labelSpan = aToken.marker.getElement()?.querySelector(
+                "span",
+              );
+              if (labelSpan) {
+                labelSpan.innerHTML = aToken.value.toString();
+              }
+            } else if (heldToken !== null) {
+              console.log("already holding a token");
+              //swap heldToken for aToken
+              const temp = heldToken;
+              heldToken = aToken.value;
+              aToken.value = temp;
               updateInventory();
               const labelSpan = aToken.marker.getElement()?.querySelector(
                 "span",
