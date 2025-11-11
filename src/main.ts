@@ -105,7 +105,7 @@ function gridToLng(gridJ: number): number {
 
 let reachRect: leaflet.Rectangle | null = null;
 function updateReachRectangle() {
-  const reachDistance = (REACH + 0.4) * CELL_SIZE;
+  const reachDistance = (REACH + 0.5) * CELL_SIZE;
   const bounds = leaflet.latLngBounds(
     [PLAYER_LATLNG.lat - reachDistance, PLAYER_LATLNG.lng - reachDistance],
     [PLAYER_LATLNG.lat + reachDistance, PLAYER_LATLNG.lng + reachDistance],
@@ -164,7 +164,6 @@ function addTokens(centerLat: number, centerLng: number) {
       // If we already rendered this token, skip it (avoid duplicates)
       if (renderCache.has(key)) continue;
 
-      // Should this cell have a token? Based on GLOBAL position
       if (hasToken(gridI, gridJ)) {
         const aToken: Token = {
           value: 1,
@@ -185,40 +184,7 @@ function addTokens(centerLat: number, centerLng: number) {
         const inReach = dx <= REACH && dy <= REACH;
 
         if (inReach) {
-          aToken.marker.on("click", () => {
-            if (heldToken !== null && heldToken == aToken.value) {
-              aToken.value += heldToken;
-              heldToken = null;
-              updateInventory();
-              const labelSpan = aToken.marker.getElement()?.querySelector(
-                "span",
-              );
-              if (labelSpan) {
-                labelSpan.innerHTML = aToken.value.toString();
-              }
-            } else if (heldToken !== null) {
-              //swap heldToken for aToken
-              const temp = heldToken;
-              heldToken = aToken.value;
-              aToken.value = temp;
-              updateInventory();
-              const labelSpan = aToken.marker.getElement()?.querySelector(
-                "span",
-              );
-              if (labelSpan) {
-                labelSpan.innerHTML = aToken.value.toString();
-              }
-            } else {
-              // Pick up
-              heldToken = aToken.value;
-              updateInventory();
-              checkWin();
-
-              aToken.rect.remove();
-              aToken.marker.remove();
-              renderCache.delete(key);
-            }
-          });
+          checkClick(aToken, key);
         }
 
         // Cache it so we can remove later
@@ -227,6 +193,44 @@ function addTokens(centerLat: number, centerLng: number) {
     }
   }
 }
+
+function checkClick(aToken: Token, key: string) {
+  aToken.marker.on("click", () => {
+    if (heldToken !== null && heldToken == aToken.value) {
+      aToken.value += heldToken;
+      heldToken = null;
+      updateInventory();
+      const labelSpan = aToken.marker.getElement()?.querySelector(
+        "span",
+      );
+      if (labelSpan) {
+        labelSpan.innerHTML = aToken.value.toString();
+      }
+    } else if (heldToken !== null) {
+      //swap heldToken for aToken
+      const temp = heldToken;
+      heldToken = aToken.value;
+      aToken.value = temp;
+      updateInventory();
+      const labelSpan = aToken.marker.getElement()?.querySelector(
+        "span",
+      );
+      if (labelSpan) {
+        labelSpan.innerHTML = aToken.value.toString();
+      }
+    } else {
+      // Pick up
+      heldToken = aToken.value;
+      updateInventory();
+      checkWin();
+
+      aToken.rect.remove();
+      aToken.marker.remove();
+      renderCache.delete(key);
+    }
+  });
+}
+
 addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
 updateReachRectangle();
 
