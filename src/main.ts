@@ -148,87 +148,77 @@ function addTokens(centerLat: number, centerLng: number) {
 
   for (let di = -viewRadius; di <= viewRadius; di++) {
     for (let dj = -viewRadius * 3; dj <= viewRadius * 3; dj++) {
-      const gridI = centerI + di; // absolute grid X
-      const gridJ = centerJ + dj; // absolute grid Y
-
-      const cellLat = gridToLat(gridI);
-      const cellLng = gridToLng(gridJ);
-      const bounds = leaflet.latLngBounds(
-        [cellLat, cellLng],
-        [cellLat + CELL_SIZE, cellLng + CELL_SIZE],
-      );
-
-      // Unique key for this cell
+      const gridI = centerI + di;
+      const gridJ = centerJ + dj;
       const key = `${gridI},${gridJ}`;
 
-      // If we already rendered this token, skip it (avoid duplicates)
       if (renderCache.has(key)) continue;
+      if (!hasToken(gridI, gridJ)) continue;
 
-      if (hasToken(gridI, gridJ)) {
-        const aToken: Token = {
-          value: 1,
-          rect: leaflet.rectangle(bounds).addTo(map),
-          marker: leaflet.marker([cellLat, cellLng], {
-            icon: leaflet.divIcon({
-              html: `<span>1</span>`,
-              className: "token-icon",
-              iconSize: [40, 50],
-              iconAnchor: [0, 50], // center of icon
-            }),
-          }).addTo(map),
-        };
+      const token = createTokenAt(gridI, gridJ);
+      renderCache.set(key, token);
 
-        // Calculate DISTANCE FROM PLAYER in grid steps
-        const dx = Math.abs(di); // distance in i
-        const dy = Math.abs(dj); // distance in j
-        const inReach = dx <= REACH && dy <= REACH;
-
-        if (inReach) {
-          checkClick(aToken, key);
-        }
-
-        // Cache it so we can remove later
-        renderCache.set(key, aToken);
+      if (isInReach(di, dj)) {
+        setupTokenClick(token, key);
       }
     }
   }
 }
 
-function checkClick(aToken: Token, key: string) {
-  aToken.marker.on("click", () => {
-    if (heldToken !== null && heldToken == aToken.value) {
-      aToken.value += heldToken;
+function createTokenAt(i: number, j: number): Token {
+  const cellLat = gridToLat(i);
+  const cellLng = gridToLng(j);
+  const bounds = leaflet.latLngBounds(
+    [cellLat, cellLng],
+    [cellLat + CELL_SIZE, cellLng + CELL_SIZE],
+  );
+
+  return {
+    value: 1,
+    rect: leaflet.rectangle(bounds).addTo(map),
+    marker: leaflet.marker([cellLat, cellLng], {
+      icon: leaflet.divIcon({
+        html: `<span>1</span>`,
+        className: "token-icon",
+        iconSize: [40, 50],
+        iconAnchor: [0, 50],
+      }),
+    }).addTo(map),
+  };
+}
+function isInReach(di: number, dj: number): boolean {
+  return Math.abs(di) <= REACH && Math.abs(dj) <= REACH;
+}
+function setupTokenClick(token: Token, key: string) {
+  token.marker.on("click", () => {
+    if (heldToken !== null && heldToken === token.value) {
+      // Merge
+      token.value += heldToken;
       heldToken = null;
       updateInventory();
-      const labelSpan = aToken.marker.getElement()?.querySelector(
-        "span",
-      );
-      if (labelSpan) {
-        labelSpan.innerHTML = aToken.value.toString();
-      }
+      updateTokenDisplay(token);
     } else if (heldToken !== null) {
-      //swap heldToken for aToken
+      // Swap
       const temp = heldToken;
-      heldToken = aToken.value;
-      aToken.value = temp;
+      heldToken = token.value;
+      token.value = temp;
       updateInventory();
-      const labelSpan = aToken.marker.getElement()?.querySelector(
-        "span",
-      );
-      if (labelSpan) {
-        labelSpan.innerHTML = aToken.value.toString();
-      }
+      updateTokenDisplay(token);
     } else {
       // Pick up
-      heldToken = aToken.value;
+      heldToken = token.value;
       updateInventory();
       checkWin();
-
-      aToken.rect.remove();
-      aToken.marker.remove();
+      token.rect.remove();
+      token.marker.remove();
       renderCache.delete(key);
     }
   });
+}
+
+function updateTokenDisplay(token: Token) {
+  const span = token.marker.getElement()?.querySelector("span");
+  if (span) span.innerHTML = token.value.toString();
 }
 
 addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
