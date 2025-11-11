@@ -2,7 +2,7 @@
 
 # Game Design Vision
 
-The player gets dropped into an adventure game. They need to collect [tokens] from around the map to feul [energy pockets] around their base area. (crafting will be add tokens to the pocket to upgrade the pocket. pocket cannot move. potential other crafting thing: combining tokens so player can carry more. maybe they can carry as many full energy pockets they have.)
+The player gets dropped into an adventure game. They need to collect [tokens] from around the map to fuel [energy pocket[s]] around their base area (origin). (crafting will be add tokens to the pocket to upgrade the pocket. pocket cannot move. potential other crafting thing: combining tokens so player can carry more. maybe they can carry as many full energy pockets they have. Or the only energy pocket that levels up with more tokens)
 
 # Technologies
 
@@ -30,9 +30,12 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 ### Steps
 
 - [ ] Make working movement buttons
-- [ ] Unload any grid spaces when leave area
-- [ ] (Re)load new grid spaces when enter area
-- [ ] Interactable cells move with player
+- [ ] Track player movement
+- [ ] Recenter loaded grid to player
+- [ ] Update reach logic to 3 cells of **player** (not origin)
+
+---
+
 - [ ] Edit crafting (one item that cant be crafted with until later)
 - [ ] Edit craftable items (no longer rectangles with numbers)
 - [ ] Edit spawn frequencies of tokens
