@@ -32,7 +32,7 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 - [x] Make working movement buttons
 - [x] Track player movement
 - [x] Recenter loaded grid to player
-- [ ] Update reach logic to 3 cells of **player** (not origin)
+- [x] Update reach logic to 3 cells of **player** (not origin)
 
 ---
 

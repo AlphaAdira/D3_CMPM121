@@ -103,21 +103,27 @@ function gridToLng(gridJ: number): number {
   return gridJ * CELL_SIZE;
 }
 
-// Calculate bounds of the reachable area (3x3 grid around center)
-const reachDistance = REACH * CELL_SIZE;
+let reachRect: leaflet.Rectangle | null = null;
+function updateReachRectangle() {
+  const reachDistance = (REACH + 0.4) * CELL_SIZE;
+  const bounds = leaflet.latLngBounds(
+    [PLAYER_LATLNG.lat - reachDistance, PLAYER_LATLNG.lng - reachDistance],
+    [PLAYER_LATLNG.lat + reachDistance, PLAYER_LATLNG.lng + reachDistance],
+  );
 
-const reachableBounds = leaflet.latLngBounds(
-  [PLAYER_LATLNG.lat - reachDistance, PLAYER_LATLNG.lng - reachDistance],
-  [PLAYER_LATLNG.lat + reachDistance, PLAYER_LATLNG.lng + reachDistance],
-);
-
-// Draw the visibility box
-leaflet.rectangle(reachableBounds, {
-  color: "white",
-  weight: 2,
-  fillOpacity: 0.1,
-  dashArray: "8, 8", // dotted line
-}).addTo(map);
+  if (reachRect) {
+    // Update existing rectangle
+    reachRect.setBounds(bounds);
+  } else {
+    // First time: create and add
+    reachRect = leaflet.rectangle(bounds, {
+      color: "white",
+      weight: 2,
+      fillOpacity: 0.1,
+      dashArray: "8, 8",
+    }).addTo(map);
+  }
+}
 
 const orginMarker = leaflet.marker(START_LATLNG);
 orginMarker.bindTooltip("orgin");
@@ -221,8 +227,8 @@ function addTokens(centerLat: number, centerLng: number) {
     }
   }
 }
-
 addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
+updateReachRectangle();
 
 function hasToken(i: number, j: number): boolean {
   return luck(`cell-${i}-${j}`) < 0.3; //amount of tokens
@@ -281,4 +287,5 @@ function updatePlayer(lat: number, lng: number) {
 
   // === Draw new tokens around new location ===
   addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
+  updateReachRectangle();
 }
