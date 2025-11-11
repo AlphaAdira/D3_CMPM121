@@ -25,8 +25,14 @@ const statusPanelDiv = document.createElement("div");
 statusPanelDiv.id = "statusPanel";
 document.body.append(statusPanelDiv);
 
-// Our classroom location
+// Our start location
 const START_LATLNG = leaflet.latLng(
+  33.908446206094084,
+  -118.35886037575585,
+);
+
+// player location
+const PLAYER_LATLNG = leaflet.latLng(
   33.908446206094084,
   -118.35886037575585,
 );
@@ -63,8 +69,8 @@ const CELL_SIZE = 0.0001;
 const reachDistance = REACH * CELL_SIZE;
 
 const reachableBounds = leaflet.latLngBounds(
-  [START_LATLNG.lat - reachDistance, START_LATLNG.lng - reachDistance],
-  [START_LATLNG.lat + reachDistance, START_LATLNG.lng + reachDistance],
+  [PLAYER_LATLNG.lat - reachDistance, PLAYER_LATLNG.lng - reachDistance],
+  [PLAYER_LATLNG.lat + reachDistance, PLAYER_LATLNG.lng + reachDistance],
 );
 
 // Draw the visibility box
@@ -78,6 +84,10 @@ leaflet.rectangle(reachableBounds, {
 const orginMarker = leaflet.marker(START_LATLNG);
 orginMarker.bindTooltip("orgin");
 orginMarker.addTo(map);
+
+const playerMarker = leaflet.marker(PLAYER_LATLNG);
+playerMarker.bindTooltip("YOU");
+playerMarker.addTo(map);
 
 interface Token {
   value: number;
@@ -150,7 +160,7 @@ function addTokens(centerLat: number, centerLng: number) {
   }
 }
 
-addTokens(START_LATLNG.lat, START_LATLNG.lng);
+addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
 
 function hasToken(i: number, j: number): boolean {
   return luck(`cell-${i}-${j}`) < 0.3; //amount of tokens
