@@ -29,9 +29,9 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 
 ### Steps
 
-- [ ] Make working movement buttons
-- [ ] Track player movement
-- [ ] Recenter loaded grid to player
+- [x] Make working movement buttons
+- [x] Track player movement
+- [x] Recenter loaded grid to player
 - [ ] Update reach logic to 3 cells of **player** (not origin)
 
 ---

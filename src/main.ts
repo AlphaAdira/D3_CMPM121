@@ -87,6 +87,22 @@ const REACH = 3;
 // Size of one cell in degrees
 const CELL_SIZE = 0.0001;
 
+// Convert lat/lng → grid coordinates (whole numbers)
+function latToGrid(lat: number): number {
+  return Math.floor(lat / CELL_SIZE);
+}
+function lngToGrid(lng: number): number {
+  return Math.floor(lng / CELL_SIZE);
+}
+
+// Convert grid → lat/lng (southwest corner of cell)
+function gridToLat(gridI: number): number {
+  return gridI * CELL_SIZE;
+}
+function gridToLng(gridJ: number): number {
+  return gridJ * CELL_SIZE;
+}
+
 // Calculate bounds of the reachable area (3x3 grid around center)
 const reachDistance = REACH * CELL_SIZE;
 
@@ -107,7 +123,7 @@ const orginMarker = leaflet.marker(START_LATLNG);
 orginMarker.bindTooltip("orgin");
 orginMarker.addTo(map);
 
-let playerMarker = leaflet.marker(PLAYER_LATLNG);
+const playerMarker = leaflet.marker(PLAYER_LATLNG);
 playerMarker.bindTooltip("YOU");
 playerMarker.addTo(map);
 
@@ -117,19 +133,33 @@ interface Token {
   marker: leaflet.Marker;
 }
 
+const renderCache = new Map<string, Token>();
+
 function addTokens(centerLat: number, centerLng: number) {
-  const rows = 10, cols = 30;
-  for (let i = -rows; i <= rows; i++) {
-    for (let j = -cols; j <= cols; j++) {
-      const cellLat = centerLat + i * CELL_SIZE;
-      const cellLng = centerLng + j * CELL_SIZE;
+  const centerI = latToGrid(centerLat);
+  const centerJ = lngToGrid(centerLng);
+  const viewRadius = 10;
+
+  for (let di = -viewRadius; di <= viewRadius; di++) {
+    for (let dj = -viewRadius * 3; dj <= viewRadius * 3; dj++) {
+      const gridI = centerI + di; // absolute grid X
+      const gridJ = centerJ + dj; // absolute grid Y
+
+      const cellLat = gridToLat(gridI);
+      const cellLng = gridToLng(gridJ);
       const bounds = leaflet.latLngBounds(
         [cellLat, cellLng],
         [cellLat + CELL_SIZE, cellLng + CELL_SIZE],
       );
 
-      // ✅ Use integer grid indices for deterministic luck
-      if (hasToken(i, j)) {
+      // Unique key for this cell
+      const key = `${gridI},${gridJ}`;
+
+      // If we already rendered this token, skip it (avoid duplicates)
+      if (renderCache.has(key)) continue;
+
+      // Should this cell have a token? Based on GLOBAL position
+      if (hasToken(gridI, gridJ)) {
         const aToken: Token = {
           value: 1,
           rect: leaflet.rectangle(bounds).addTo(map),
@@ -138,13 +168,18 @@ function addTokens(centerLat: number, centerLng: number) {
               html: `<span>1</span>`,
               className: "token-icon",
               iconSize: [40, 50],
-              iconAnchor: [0, 50],
+              iconAnchor: [0, 50], // center of icon
             }),
           }).addTo(map),
         };
-        if (i >= -REACH && i < REACH && j >= -REACH && j < REACH) {
+
+        // Calculate DISTANCE FROM PLAYER in grid steps
+        const dx = Math.abs(di); // distance in i
+        const dy = Math.abs(dj); // distance in j
+        const inReach = dx <= REACH && dy <= REACH;
+
+        if (inReach) {
           aToken.marker.on("click", () => {
-            console.log("Cell clicked!", i, j);
             if (heldToken !== null && heldToken == aToken.value) {
               aToken.value += heldToken;
               heldToken = null;
@@ -156,7 +191,6 @@ function addTokens(centerLat: number, centerLng: number) {
                 labelSpan.innerHTML = aToken.value.toString();
               }
             } else if (heldToken !== null) {
-              console.log("already holding a token");
               //swap heldToken for aToken
               const temp = heldToken;
               heldToken = aToken.value;
@@ -169,14 +203,20 @@ function addTokens(centerLat: number, centerLng: number) {
                 labelSpan.innerHTML = aToken.value.toString();
               }
             } else {
+              // Pick up
               heldToken = aToken.value;
               updateInventory();
               checkWin();
+
               aToken.rect.remove();
               aToken.marker.remove();
+              renderCache.delete(key);
             }
           });
         }
+
+        // Cache it so we can remove later
+        renderCache.set(key, aToken);
       }
     }
   }
@@ -208,33 +248,37 @@ const West = document.getElementById("west");
 
 North!.addEventListener("click", northFunction);
 function northFunction() {
-  console.log(PLAYER_LATLNG.lat + 1);
-  updatePlayer(PLAYER_LATLNG.lat + 1, PLAYER_LATLNG.lat);
+  updatePlayer(PLAYER_LATLNG.lat + CELL_SIZE, PLAYER_LATLNG.lng);
 }
 
 South!.addEventListener("click", southFunction);
 function southFunction() {
-  console.log(PLAYER_LATLNG.lat - 1);
-  updatePlayer(PLAYER_LATLNG.lat - 1, PLAYER_LATLNG.lat);
+  updatePlayer(PLAYER_LATLNG.lat - CELL_SIZE, PLAYER_LATLNG.lng);
 }
 
 East!.addEventListener("click", eastFunction);
 function eastFunction() {
-  console.log(PLAYER_LATLNG.lng - 1);
-  updatePlayer(PLAYER_LATLNG.lat, PLAYER_LATLNG.lat - 1);
+  updatePlayer(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng + CELL_SIZE);
 }
 
 West!.addEventListener("click", westFunction);
 function westFunction() {
-  console.log(PLAYER_LATLNG.lng + 1);
-  updatePlayer(PLAYER_LATLNG.lat, PLAYER_LATLNG.lat + 1);
+  updatePlayer(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng - CELL_SIZE);
 }
 
 function updatePlayer(lat: number, lng: number) {
-  PLAYER_LATLNG = leaflet.latLng(
-    lat,
-    lng,
-  );
-  playerMarker = leaflet.marker(PLAYER_LATLNG);
+  // === Remove all old tokens ===
+  for (const [_key, token] of renderCache.entries()) {
+    token.rect.remove();
+    token.marker.remove();
+  }
+  renderCache.clear();
+
+  // === Update player ===
+  PLAYER_LATLNG = leaflet.latLng(lat, lng);
+  playerMarker.setLatLng(PLAYER_LATLNG);
+  map.setView(PLAYER_LATLNG); // make map follow player
+
+  // === Draw new tokens around new location ===
   addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
 }
