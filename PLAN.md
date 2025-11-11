@@ -12,10 +12,7 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 
 # Assignments
 
-## D3.a: Core mechanics (token collection and crafting)
-
-Key technical challenge: Can you assemble a map-based user interface using the Leaflet mapping framework?
-Key gameplay challenge: Can players collect and craft tokens from nearby locations to finally make one of sufficiently high value?
+## D3.a: Core mechanics
 
 ### Steps
 
@@ -27,3 +24,15 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] Pick up range
 - [x] Implement pickup & crafting
 - [x] Add win condition
+
+## D3.b: Globe-spanning Gameplay
+
+### Steps
+
+- [ ] Make working movement buttons
+- [ ] Unload any grid spaces when leave area
+- [ ] (Re)load new grid spaces when enter area
+- [ ] Interactable cells move with player
+- [ ] Edit crafting (one item that cant be crafted with until later)
+- [ ] Edit craftable items (no longer rectangles with numbers)
+- [ ] Edit spawn frequencies of tokens
