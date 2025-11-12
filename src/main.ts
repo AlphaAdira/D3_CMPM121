@@ -33,25 +33,25 @@ const statusPanelDiv = document.createElement("div");
 statusPanelDiv.id = "statusPanel";
 document.body.append(statusPanelDiv);
 
+const westBtn = document.createElement("button");
+westBtn.id = "west";
+westBtn.textContent = "⬅️";
+document.body.append(westBtn);
+
 const northBtn = document.createElement("button");
 northBtn.id = "north";
 northBtn.textContent = "⬆️";
 document.body.append(northBtn);
-
-const eastBtn = document.createElement("button");
-eastBtn.id = "east";
-eastBtn.textContent = "➡️";
-document.body.append(eastBtn);
 
 const southBtn = document.createElement("button");
 southBtn.id = "south";
 southBtn.textContent = "⬇️";
 document.body.append(southBtn);
 
-const westBtn = document.createElement("button");
-westBtn.id = "west";
-westBtn.textContent = "⬅️";
-document.body.append(westBtn);
+const eastBtn = document.createElement("button");
+eastBtn.id = "east";
+eastBtn.textContent = "➡️";
+document.body.append(eastBtn);
 
 // Our start location
 const START_LATLNG = leaflet.latLng(
@@ -208,10 +208,10 @@ function setupTokenClick(token: Token, key: string) {
       // Pick up
       heldToken = token.value;
       updateInventory();
-      checkWin();
       token.rect.remove();
       token.marker.remove();
       renderCache.delete(key);
+      checkWin();
     }
   });
 }
@@ -236,7 +236,9 @@ function updateInventory() {
 
 function checkWin() {
   if (heldToken !== null && heldToken >= 12) {
-    statusPanelDiv.textContent = "🎉 You win! Token value: " + heldToken;
+    alert(
+      `"🎉 You win! Token value: ${heldToken}`,
+    );
   }
 }
 

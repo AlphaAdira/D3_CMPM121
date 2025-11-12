@@ -37,5 +37,19 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 ---
 
 - [x] Edit crafting (items can't craft with EVERYTHING)
+
+## D3.c: Object persistence
+
+Remember what tokens have been interacted with
+
+### Steps
+
+- [ ] Make cells retain state when manually reloaded.
+- [ ] Hook into scroll/pan events to "save" cells going offscreen.
+- [ ] Restore state when cells return.
+- [ ] Profile memory — ensure unmodified cells aren’t stored.
+
+---
+
 - [ ] Edit craftable items (no longer rectangles with numbers)
 - [ ] Edit spawn frequencies of tokens
