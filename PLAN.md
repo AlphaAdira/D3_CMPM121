@@ -40,8 +40,6 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 
 ## D3.c: Object persistence
 
-Remember what tokens have been interacted with
-
 ### Steps
 
 - [x] Make cells retain state when manually reloaded. (Focus #1)
@@ -51,5 +49,26 @@ Remember what tokens have been interacted with
 
 ---
 
+### Steps to get closer to Design Vision
+
 - [ ] Edit craftable items (no longer rectangles with numbers)
 - [ ] Edit spawn frequencies of tokens
+
+## D3.d: Gameplay Across Real-world Space and Time
+
+### Steps
+
+- [ ] use geolocation API to control player movement
+- [ ] geolocation movement controls hidden (Facade design pattern)
+- [ ] localStorage API should be used to persist game state across page loads
+- [ ] implement a way to start a new game
+- [ ] toggle button-based vs geolocation-based movement
+
+---
+
+### Steps to get closer to Design Vision
+
+- [ ] customize map to fit design vision
+- [ ] add home-base feature that gets placed where player starts
+- [ ] change win condition to match design vision (bring enough loot back to base)
+- [ ] add storage/strength to player carry limit (ex: weak player can't pickup token worth 4 points)
