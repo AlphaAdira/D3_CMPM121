@@ -133,6 +133,9 @@ const playerMarker = leaflet.marker(PLAYER_LATLNG);
 playerMarker.bindTooltip("YOU");
 playerMarker.addTo(map);
 
+let prevCenterI: number | null = null;
+let prevCenterJ: number | null = null;
+
 interface Token {
   value: number;
   rect: leaflet.Rectangle;
@@ -259,6 +262,43 @@ function updateTokenDisplay(token: Token) {
   if (span) span.innerHTML = token.value.toString();
 }
 
+function removeTokens(
+  currI: number,
+  currJ: number,
+  prevI: number,
+  prevJ: number,
+) {
+  const radius = 10; // must match viewRadius in addTokens
+
+  const newCells = new Set<string>();
+  const oldCells = new Set<string>();
+
+  // Build set of all cell keys in current view
+  for (let di = -radius; di <= radius; di++) {
+    for (let dj = -radius * 3; dj <= radius * 3; dj++) {
+      newCells.add(`${currI + di},${currJ + dj}`);
+    }
+  }
+
+  // Build set of all cell keys in previous view
+  for (let di = -radius; di <= radius; di++) {
+    for (let dj = -radius * 3; dj <= radius * 3; dj++) {
+      oldCells.add(`${prevI + di},${prevJ + dj}`);
+    }
+  }
+
+  const exited = new Set([...oldCells].filter((key) => !newCells.has(key)));
+
+  for (const key of exited) {
+    const token = renderCache.get(key);
+    if (token) {
+      token.rect.remove();
+      token.marker.remove();
+      renderCache.delete(key);
+    }
+  }
+}
+
 addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
 updateReachRectangle();
 
@@ -313,19 +353,18 @@ function westFunction() {
 }
 
 function updatePlayer(lat: number, lng: number) {
-  // === Remove all old tokens ===
-  for (const [_key, token] of renderCache.entries()) {
-    token.rect.remove();
-    token.marker.remove();
-  }
-  renderCache.clear();
-
-  // === Update player ===
   PLAYER_LATLNG = leaflet.latLng(lat, lng);
   playerMarker.setLatLng(PLAYER_LATLNG);
   map.setView(PLAYER_LATLNG); // make map follow player
 
-  // === Draw new tokens around new location ===
+  removeTokens(
+    lat,
+    lng,
+    prevCenterI!,
+    prevCenterJ!,
+  );
   addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
   updateReachRectangle();
+  prevCenterI = lat;
+  prevCenterJ = lng;
 }
