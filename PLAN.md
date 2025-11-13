@@ -44,7 +44,7 @@ Remember what tokens have been interacted with
 
 ### Steps
 
-- [ ] Make cells retain state when manually reloaded.
+- [x] Make cells retain state when manually reloaded.
 - [ ] Hook into scroll/pan events to "save" cells going offscreen.
 - [ ] Restore state when cells return.
 - [ ] Profile memory — ensure unmodified cells aren’t stored.

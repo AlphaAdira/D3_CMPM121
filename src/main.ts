@@ -138,6 +138,11 @@ interface Token {
   rect: leaflet.Rectangle;
   marker: leaflet.Marker;
 }
+interface CellState {
+  hasToken: boolean;
+  value: number;
+}
+const cellMemory = new Map<string, CellState>();
 
 const renderCache = new Map<string, Token>();
 
@@ -156,16 +161,31 @@ function addTokens(centerLat: number, centerLng: number) {
       if (!hasToken(gridI, gridJ)) continue;
 
       const token = createTokenAt(gridI, gridJ);
-      renderCache.set(key, token);
+      if (token) {
+        renderCache.set(key, token);
+      }
 
-      if (isInReach(di, dj)) {
-        setupTokenClick(token, key);
+      if (isInReach(di, dj) && token) {
+        setupTokenClick(token, key, gridI, gridJ);
       }
     }
   }
 }
 
-function createTokenAt(i: number, j: number): Token {
+function createTokenAt(i: number, j: number): Token | null {
+  const key = `${i},${j}`;
+  const state = cellMemory.get(key);
+  let sendValue = 1;
+
+  if (state !== undefined) {
+    if (!state.hasToken) {
+      return null; // No token allowed
+    }
+    sendValue = state.value;
+  } else if (luck(`cell-${i}-${j}`) >= 0.3) {
+    return null;
+  }
+
   const cellLat = gridToLat(i);
   const cellLng = gridToLng(j);
   const bounds = leaflet.latLngBounds(
@@ -174,11 +194,11 @@ function createTokenAt(i: number, j: number): Token {
   );
 
   return {
-    value: 1,
+    value: sendValue,
     rect: leaflet.rectangle(bounds).addTo(map),
     marker: leaflet.marker([cellLat, cellLng], {
       icon: leaflet.divIcon({
-        html: `<span>1</span>`,
+        html: `<span>${sendValue}</span>`,
         className: "token-icon",
         iconSize: [40, 50],
         iconAnchor: [0, 50],
@@ -189,12 +209,21 @@ function createTokenAt(i: number, j: number): Token {
 function isInReach(di: number, dj: number): boolean {
   return Math.abs(di) <= REACH && Math.abs(dj) <= REACH;
 }
-function setupTokenClick(token: Token, key: string) {
+function setupTokenClick(
+  token: Token,
+  key: string,
+  gridI: number,
+  gridJ: number,
+) {
   token.marker.on("click", () => {
     if (heldToken !== null && heldToken === token.value) {
       // Merge
       token.value += heldToken;
       heldToken = null;
+      cellMemory.set(`${gridI},${gridJ}`, {
+        hasToken: true,
+        value: token.value,
+      });
       updateInventory();
       updateTokenDisplay(token);
     } else if (heldToken !== null) {
@@ -202,12 +231,21 @@ function setupTokenClick(token: Token, key: string) {
       const temp = heldToken;
       heldToken = token.value;
       token.value = temp;
+      cellMemory.set(`${gridI},${gridJ}`, {
+        hasToken: true,
+        value: token.value,
+      });
       updateInventory();
       updateTokenDisplay(token);
     } else {
       // Pick up
       heldToken = token.value;
+      token.value = 0;
       updateInventory();
+      cellMemory.set(`${gridI},${gridJ}`, {
+        hasToken: false,
+        value: token.value,
+      });
       token.rect.remove();
       token.marker.remove();
       renderCache.delete(key);
@@ -225,7 +263,13 @@ addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
 updateReachRectangle();
 
 function hasToken(i: number, j: number): boolean {
-  return luck(`cell-${i}-${j}`) < 0.3; //amount of tokens
+  const key = `${i},${j}`;
+  const state = cellMemory.get(key);
+  if (state !== undefined) {
+    return state.hasToken;
+  }
+  // If not in memory
+  return luck(`cell-${i}-${j}`) < 0.3;
 }
 
 function updateInventory() {
