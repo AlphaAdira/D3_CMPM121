@@ -173,6 +173,8 @@ function addTokens(centerLat: number, centerLng: number) {
       }
     }
   }
+  prevCenterI = centerI;
+  prevCenterJ = centerJ;
 }
 
 function createTokenAt(i: number, j: number): Token | null {
@@ -265,8 +267,6 @@ function updateTokenDisplay(token: Token) {
 function removeTokens(
   currI: number,
   currJ: number,
-  prevI: number,
-  prevJ: number,
 ) {
   const radius = 10; // must match viewRadius in addTokens
 
@@ -283,7 +283,7 @@ function removeTokens(
   // Build set of all cell keys in previous view
   for (let di = -radius; di <= radius; di++) {
     for (let dj = -radius * 3; dj <= radius * 3; dj++) {
-      oldCells.add(`${prevI + di},${prevJ + dj}`);
+      oldCells.add(`${prevCenterI! + di},${prevCenterJ! + dj}`);
     }
   }
 
@@ -360,11 +360,7 @@ function updatePlayer(lat: number, lng: number) {
   removeTokens(
     lat,
     lng,
-    prevCenterI!,
-    prevCenterJ!,
   );
   addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
   updateReachRectangle();
-  prevCenterI = lat;
-  prevCenterJ = lng;
 }
