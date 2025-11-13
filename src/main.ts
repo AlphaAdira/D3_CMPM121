@@ -149,13 +149,14 @@ const cellMemory = new Map<string, CellState>();
 
 const renderCache = new Map<string, Token>();
 
+const radius = 5;
+
 function addTokens(centerLat: number, centerLng: number) {
   const centerI = latToGrid(centerLat);
   const centerJ = lngToGrid(centerLng);
-  const viewRadius = 10;
 
-  for (let di = -viewRadius; di <= viewRadius; di++) {
-    for (let dj = -viewRadius * 3; dj <= viewRadius * 3; dj++) {
+  for (let di = -radius; di <= radius; di++) {
+    for (let dj = -radius * 3; dj <= radius * 3; dj++) {
       const gridI = centerI + di;
       const gridJ = centerJ + dj;
       const key = `${gridI},${gridJ}`;
@@ -268,8 +269,6 @@ function removeTokens(
   currI: number,
   currJ: number,
 ) {
-  const radius = 10; // must match viewRadius in addTokens
-
   const newCells = new Set<string>();
   const oldCells = new Set<string>();
 

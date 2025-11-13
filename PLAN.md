@@ -44,10 +44,10 @@ Remember what tokens have been interacted with
 
 ### Steps
 
-- [x] Make cells retain state when manually reloaded.
-- [ ] Hook into scroll/pan events to "save" cells going offscreen.
-- [ ] Restore state when cells return.
-- [ ] Profile memory — ensure unmodified cells aren’t stored.
+- [x] Make cells retain state when manually reloaded. (Focus #1)
+- [x] Hook into scroll/pan events to "save" cells going offscreen. (Focus #2)
+- [x] Restore state when cells return (already did that in D3.b, just didnt notice)
+- [x] Profile memory — ensure unmodified cells aren’t stored. (did while doing the other two)
 
 ---
 
