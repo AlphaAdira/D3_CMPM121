@@ -125,6 +125,33 @@ function updateReachRectangle() {
   }
 }
 
+let watchId: number | null = null;
+
+function startGeolocationTracking() {
+  if (!navigator.geolocation) {
+    console.error("Geolocation not supported");
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      updatePlayer(latitude, longitude);
+    },
+    (error) => console.error("Geo error:", error),
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 },
+  );
+}
+
+startGeolocationTracking();
+
+function stopGeolocationTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+}
+
 const orginMarker = leaflet.marker(START_LATLNG);
 orginMarker.bindTooltip("orgin");
 orginMarker.addTo(map);
@@ -322,6 +349,7 @@ function checkWin() {
     alert(
       `"🎉 You win! Token value: ${heldToken}`,
     );
+    stopGeolocationTracking();
   }
 }
 
