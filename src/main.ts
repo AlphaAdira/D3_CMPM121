@@ -88,6 +88,7 @@ function startGeolocationTracking() {
   );
 }
 
+loadGameState();
 startGeolocationTracking();
 
 function stopGeolocationTracking() {
@@ -273,6 +274,7 @@ function setupTokenClick(
         value: token.value,
       });
       updateInventory();
+      saveGameState();
       updateTokenDisplay(token);
     } else if (heldToken !== null) {
       // Swap
@@ -284,12 +286,14 @@ function setupTokenClick(
         value: token.value,
       });
       updateInventory();
+      saveGameState();
       updateTokenDisplay(token);
     } else {
       // Pick up
       heldToken = token.value;
       token.value = 0;
       updateInventory();
+      saveGameState();
       cellMemory.set(`${gridI},${gridJ}`, {
         hasToken: false,
         value: token.value,
@@ -364,6 +368,28 @@ function checkWin() {
       `"🎉 You win! Token value: ${heldToken}`,
     );
     stopGeolocationTracking();
+  }
+}
+
+// Save game state to localStorage
+function saveGameState() {
+  const state = {
+    heldToken,
+    playerLat: PLAYER_LATLNG?.lat,
+    playerLng: PLAYER_LATLNG?.lng,
+  };
+  localStorage.setItem("d3-game-state", JSON.stringify(state));
+}
+// Load game state from localStorage
+function loadGameState() {
+  const saved = localStorage.getItem("d3-game-state");
+  if (saved) {
+    const state = JSON.parse(saved);
+    heldToken = state.heldToken ?? null;
+    updateInventory(); // Keep UI in sync
+    if (state.playerLat && state.playerLng) {
+      START_LATLNG = leaflet.latLng(state.playerLat, state.playerLng);
+    }
   }
 }
 
