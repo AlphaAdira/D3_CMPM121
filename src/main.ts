@@ -53,33 +53,70 @@ eastBtn.id = "east";
 eastBtn.textContent = "➡️";
 document.body.append(eastBtn);
 
-// Our start location
-const START_LATLNG = leaflet.latLng(
-  33.908446206094084,
-  -118.35886037575585,
-);
+let START_LATLNG: leaflet.LatLng | null = null;
+let PLAYER_LATLNG: leaflet.LatLng | null = null;
+let watchId: number | null = null;
+let map: leaflet.Map;
 
-// player location
-let PLAYER_LATLNG = START_LATLNG;
+function startGeolocationTracking() {
+  if (!navigator.geolocation) {
+    console.error("Geolocation not supported");
+    return;
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      const latLng = leaflet.latLng(latitude, longitude);
+
+      // ✅ Set on first update
+      if (START_LATLNG === null) {
+        START_LATLNG = latLng;
+        PLAYER_LATLNG = latLng;
+
+        // 🟢 Initialize ONLY here
+        initializeMap(START_LATLNG);
+        createOriginMarker(START_LATLNG);
+        createPlayerMarker(START_LATLNG);
+      }
+
+      // Always update player movement
+      updatePlayer(latitude, longitude);
+    },
+    (error) => console.error("Geo error:", error),
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 },
+  );
+}
+
+startGeolocationTracking();
+
+function stopGeolocationTracking() {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+}
 
 // Create the map (element with id "map" is defined in index.html)
-const map = leaflet.map(mapDiv, {
-  center: START_LATLNG,
-  zoom: GAMEPLAY_ZOOM_LEVEL,
-  minZoom: GAMEPLAY_ZOOM_LEVEL,
-  maxZoom: GAMEPLAY_ZOOM_LEVEL,
-  zoomControl: false,
-  scrollWheelZoom: false,
-});
+function initializeMap(center: leaflet.LatLng) {
+  map = leaflet.map(mapDiv, {
+    center: center,
+    zoom: GAMEPLAY_ZOOM_LEVEL,
+    minZoom: GAMEPLAY_ZOOM_LEVEL,
+    maxZoom: GAMEPLAY_ZOOM_LEVEL,
+    zoomControl: false,
+    scrollWheelZoom: false,
+  });
 
-// Populate the map with a background tile layer
-leaflet
-  .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution:
-      '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  })
-  .addTo(map);
+  // Populate the map with a background tile layer
+  leaflet
+    .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    })
+    .addTo(map);
+}
 
 // Interaction range in grid cells
 const REACH = 3;
@@ -105,6 +142,7 @@ function gridToLng(gridJ: number): number {
 
 let reachRect: leaflet.Rectangle | null = null;
 function updateReachRectangle() {
+  if (PLAYER_LATLNG === null) return;
   const reachDistance = (REACH + 0.5) * CELL_SIZE;
   const bounds = leaflet.latLngBounds(
     [PLAYER_LATLNG.lat - reachDistance, PLAYER_LATLNG.lng - reachDistance],
@@ -125,40 +163,17 @@ function updateReachRectangle() {
   }
 }
 
-let watchId: number | null = null;
-
-function startGeolocationTracking() {
-  if (!navigator.geolocation) {
-    console.error("Geolocation not supported");
-    return;
-  }
-
-  watchId = navigator.geolocation.watchPosition(
-    (position) => {
-      const { latitude, longitude } = position.coords;
-      updatePlayer(latitude, longitude);
-    },
-    (error) => console.error("Geo error:", error),
-    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 },
-  );
+function createOriginMarker(pos: leaflet.LatLng) {
+  const originMarker = leaflet.marker(pos).addTo(map);
+  originMarker.bindTooltip("origin");
 }
 
-startGeolocationTracking();
-
-function stopGeolocationTracking() {
-  if (watchId !== null) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
+let playerMarker: leaflet.Marker;
+function createPlayerMarker(pos: leaflet.LatLng) {
+  playerMarker = leaflet.marker(pos).addTo(map);
+  playerMarker.bindTooltip("YOU");
+  PLAYER_LATLNG = pos;
 }
-
-const orginMarker = leaflet.marker(START_LATLNG);
-orginMarker.bindTooltip("orgin");
-orginMarker.addTo(map);
-
-const playerMarker = leaflet.marker(PLAYER_LATLNG);
-playerMarker.bindTooltip("YOU");
-playerMarker.addTo(map);
 
 let prevCenterI: number | null = null;
 let prevCenterJ: number | null = null;
@@ -325,7 +340,6 @@ function removeTokens(
   }
 }
 
-addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
 updateReachRectangle();
 
 function hasToken(i: number, j: number): boolean {
@@ -361,25 +375,30 @@ const West = document.getElementById("west");
 
 North!.addEventListener("click", northFunction);
 function northFunction() {
+  if (PLAYER_LATLNG === null) return;
   updatePlayer(PLAYER_LATLNG.lat + CELL_SIZE, PLAYER_LATLNG.lng);
 }
 
 South!.addEventListener("click", southFunction);
 function southFunction() {
+  if (PLAYER_LATLNG === null) return;
   updatePlayer(PLAYER_LATLNG.lat - CELL_SIZE, PLAYER_LATLNG.lng);
 }
 
 East!.addEventListener("click", eastFunction);
 function eastFunction() {
+  if (PLAYER_LATLNG === null) return;
   updatePlayer(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng + CELL_SIZE);
 }
 
 West!.addEventListener("click", westFunction);
 function westFunction() {
+  if (PLAYER_LATLNG === null) return;
   updatePlayer(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng - CELL_SIZE);
 }
 
 function updatePlayer(lat: number, lng: number) {
+  if (PLAYER_LATLNG === null) return;
   PLAYER_LATLNG = leaflet.latLng(lat, lng);
   playerMarker.setLatLng(PLAYER_LATLNG);
   map.setView(PLAYER_LATLNG); // make map follow player

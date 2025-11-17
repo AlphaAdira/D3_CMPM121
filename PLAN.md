@@ -47,19 +47,14 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 - [x] Restore state when cells return (already did that in D3.b, just didnt notice)
 - [x] Profile memory — ensure unmodified cells aren’t stored. (did while doing the other two)
 
----
-
-### Steps to get closer to Design Vision
-
-- [ ] Edit craftable items (no longer rectangles with numbers)
-- [ ] Edit spawn frequencies of tokens
-
 ## D3.d: Gameplay Across Real-world Space and Time
 
 ### Steps
 
+- [ ] Edit craftable items (no longer rectangles with numbers)
+- [ ] Edit spawn frequencies of tokens
 - [x] use geolocation API to track player location
-- [ ] encapsulate the Geolocation API behind a simple interface (Facade design pattern)
+- [x] encapsulate the Geolocation API behind a simple interface (Facade design pattern)
 - [ ] localStorage API should be used to persist game state across page loads
 - [ ] implement a way to start a new game
 - [ ] toggle button-based vs geolocation-based movement
