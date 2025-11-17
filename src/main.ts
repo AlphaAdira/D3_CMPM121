@@ -175,6 +175,7 @@ function updateReachRectangle() {
       weight: 2,
       fillOpacity: 0.1,
       dashArray: "8, 8",
+      interactive: false,
     }).addTo(map);
   }
 }
