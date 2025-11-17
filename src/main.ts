@@ -171,7 +171,7 @@ function updateReachRectangle() {
   } else {
     // First time: create and add
     reachRect = leaflet.rectangle(bounds, {
-      color: "white",
+      color: "gray",
       weight: 2,
       fillOpacity: 0.1,
       dashArray: "8, 8",
@@ -256,13 +256,13 @@ function createTokenAt(i: number, j: number): Token | null {
     [cellLat, cellLng],
     [cellLat + CELL_SIZE, cellLng + CELL_SIZE],
   );
-
+  console.log(sendValue);
   return {
     value: sendValue,
-    rect: leaflet.rectangle(bounds).addTo(map),
+    rect: leaflet.rectangle(bounds, { color: "black" }).addTo(map),
     marker: leaflet.marker([cellLat, cellLng], {
       icon: leaflet.divIcon({
-        html: `<span>${sendValue}</span>`,
+        html: getTokenHTML(sendValue),
         className: "token-icon",
         iconSize: [40, 50],
         iconAnchor: [0, 50],
@@ -270,6 +270,20 @@ function createTokenAt(i: number, j: number): Token | null {
     }).addTo(map),
   };
 }
+const getTokenHTML = (value: number): string => {
+  switch (value) {
+    case 1:
+      return "🟢"; // Small gem
+    case 2:
+      return "🟡"; // Bigger
+    case 4:
+      return "🟠"; // Even bigger
+    case 8:
+      return "🔴"; // Power-up!
+    default:
+      return "💎"; // Rare catch-all
+  }
+};
 function isInReach(di: number, dj: number): boolean {
   return Math.abs(di) <= REACH && Math.abs(dj) <= REACH;
 }
@@ -322,8 +336,14 @@ function setupTokenClick(
 }
 
 function updateTokenDisplay(token: Token) {
-  const span = token.marker.getElement()?.querySelector("span");
-  if (span) span.innerHTML = token.value.toString();
+  token.marker.setIcon(
+    leaflet.divIcon({
+      html: getTokenHTML(token.value),
+      className: "token-icon",
+      iconSize: [40, 50],
+      iconAnchor: [0, 50],
+    }),
+  );
 }
 
 function removeTokens(
