@@ -95,9 +95,6 @@ function startGeolocationTracking() {
   );
 }
 
-loadGameState();
-startGeolocationTracking();
-
 function stopGeolocationTracking() {
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
@@ -378,24 +375,52 @@ function checkWin() {
   }
 }
 
+loadGameState();
+startGeolocationTracking();
+
 // Save game state to localStorage
 function saveGameState() {
   const state = {
     heldToken,
     playerLat: PLAYER_LATLNG?.lat,
     playerLng: PLAYER_LATLNG?.lng,
+    cellValues: Object.fromEntries(
+      Array.from(cellMemory.entries()).map((
+        [key, { hasToken, value }],
+      ) => [key, { hasToken, value }]),
+    ),
   };
   localStorage.setItem("d3-game-state", JSON.stringify(state));
+  console.log("saved state");
 }
 // Load game state from localStorage
 function loadGameState() {
   const saved = localStorage.getItem("d3-game-state");
   if (saved) {
+    console.log("loaded state");
     const state = JSON.parse(saved);
     heldToken = state.heldToken ?? null;
     updateInventory(); // Keep UI in sync
+    if (state.cellValues) {
+      const cellValues = state.cellValues as Record<
+        string,
+        { hasToken: boolean; value: number }
+      >;
+      Object.entries(cellValues).forEach(([key, { hasToken, value }]) => {
+        cellMemory.set(key, { hasToken, value });
+        if (hasToken) {
+          const [i, j] = key.split(",").map(Number);
+          const token = createTokenAt(i, j);
+          if (token) renderCache.set(key, token);
+        }
+      });
+    }
     if (state.playerLat && state.playerLng) {
       START_LATLNG = leaflet.latLng(state.playerLat, state.playerLng);
+      initializeMap(START_LATLNG);
+      createOriginMarker(START_LATLNG);
+      createPlayerMarker(START_LATLNG);
+      updateReachRectangle();
     }
   }
 }
