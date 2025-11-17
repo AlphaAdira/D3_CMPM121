@@ -1,4 +1,4 @@
-# D3: {game title goes here}
+# D3
 
 # Game Design Vision
 

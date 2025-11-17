@@ -206,7 +206,7 @@ const baseIcon = leaflet.icon({
 
 function createOriginMarker(pos: leaflet.LatLng) {
   const originMarker = leaflet.marker(pos, { icon: baseIcon }).addTo(map);
-  originMarker.bindTooltip("origin");
+  originMarker.bindTooltip("home base");
   originMarker.on("click", () => {
     if (heldToken) {
       points += heldToken;
