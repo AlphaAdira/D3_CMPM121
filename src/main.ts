@@ -194,7 +194,7 @@ interface CellState {
 }
 const cellMemory = new Map<string, CellState>();
 
-const renderCache = new Map<string, Token>();
+const renderTokens = new Map<string, Token>();
 
 const radius = 5;
 
@@ -208,12 +208,12 @@ function addTokens(centerLat: number, centerLng: number) {
       const gridJ = centerJ + dj;
       const key = `${gridI},${gridJ}`;
 
-      if (renderCache.has(key)) continue;
+      if (renderTokens.has(key)) continue;
       if (!hasToken(gridI, gridJ)) continue;
 
       const token = createTokenAt(gridI, gridJ);
       if (token) {
-        renderCache.set(key, token);
+        renderTokens.set(key, token);
       }
 
       if (isInReach(di, dj) && token) {
@@ -304,7 +304,7 @@ function setupTokenClick(
       });
       token.rect.remove();
       token.marker.remove();
-      renderCache.delete(key);
+      renderTokens.delete(key);
       checkWin();
     }
   });
@@ -339,11 +339,11 @@ function removeTokens(
   const exited = new Set([...oldCells].filter((key) => !newCells.has(key)));
 
   for (const key of exited) {
-    const token = renderCache.get(key);
+    const token = renderTokens.get(key);
     if (token) {
       token.rect.remove();
       token.marker.remove();
-      renderCache.delete(key);
+      renderTokens.delete(key);
     }
   }
 }
@@ -401,6 +401,13 @@ function loadGameState() {
     const state = JSON.parse(saved);
     heldToken = state.heldToken ?? null;
     updateInventory(); // Keep UI in sync
+    if (state.playerLat && state.playerLng) {
+      START_LATLNG = leaflet.latLng(state.playerLat, state.playerLng);
+      initializeMap(START_LATLNG);
+      createOriginMarker(START_LATLNG);
+      createPlayerMarker(START_LATLNG);
+      updateReachRectangle();
+    }
     if (state.cellValues) {
       const cellValues = state.cellValues as Record<
         string,
@@ -411,16 +418,9 @@ function loadGameState() {
         if (hasToken) {
           const [i, j] = key.split(",").map(Number);
           const token = createTokenAt(i, j);
-          if (token) renderCache.set(key, token);
+          if (token) renderTokens.set(key, token);
         }
       });
-    }
-    if (state.playerLat && state.playerLng) {
-      START_LATLNG = leaflet.latLng(state.playerLat, state.playerLng);
-      initializeMap(START_LATLNG);
-      createOriginMarker(START_LATLNG);
-      createPlayerMarker(START_LATLNG);
-      updateReachRectangle();
     }
   }
 }
@@ -457,11 +457,11 @@ function startNewGame() {
 
   // Clear maps
   cellMemory.clear();
-  renderCache.forEach((token) => {
+  renderTokens.forEach((token) => {
     token.rect.remove();
     token.marker.remove();
   });
-  renderCache.clear();
+  renderTokens.clear();
 
   // Remove UI elements that may persist
   if (reachRect) {

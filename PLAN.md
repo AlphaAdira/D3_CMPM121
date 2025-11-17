@@ -53,7 +53,7 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 
 - [x] use geolocation API to track player location
 - [x] encapsulate the Geolocation API behind a simple interface (Facade design pattern)
-- [ ] localStorage API should be used to persist game state across page loads
+- [x] localStorage API should be used to persist game state across page loads
 - [x] implement a way to start a new game
 - [ ] toggle button-based vs geolocation-based movement
 
