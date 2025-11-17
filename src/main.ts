@@ -390,6 +390,8 @@ startGeolocationTracking();
 function saveGameState() {
   const state = {
     heldToken,
+    startLat: START_LATLNG?.lat,
+    startLng: START_LATLNG?.lng,
     playerLat: PLAYER_LATLNG?.lat,
     playerLng: PLAYER_LATLNG?.lng,
     cellValues: Object.fromEntries(
@@ -409,11 +411,14 @@ function loadGameState() {
     const state = JSON.parse(saved);
     heldToken = state.heldToken ?? null;
     updateInventory(); // Keep UI in sync
-    if (state.playerLat && state.playerLng) {
-      START_LATLNG = leaflet.latLng(state.playerLat, state.playerLng);
+    if (state.startLat && state.startLng) {
+      START_LATLNG = leaflet.latLng(state.startLat, state.startLng);
       initializeMap(START_LATLNG);
       createOriginMarker(START_LATLNG);
-      createPlayerMarker(START_LATLNG);
+    }
+    if (state.playerLat && state.playerLng) {
+      PLAYER_LATLNG = leaflet.latLng(state.playerLat, state.playerLng);
+      createPlayerMarker(PLAYER_LATLNG);
       updateReachRectangle();
     }
     if (state.cellValues) {
