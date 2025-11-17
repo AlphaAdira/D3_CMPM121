@@ -118,6 +118,10 @@ function initializeMap(center: leaflet.LatLng) {
     maxZoom: GAMEPLAY_ZOOM_LEVEL,
     zoomControl: false,
     scrollWheelZoom: false,
+    doubleClickZoom: false,
+    boxZoom: false,
+    keyboard: false,
+    dragging: false,
   });
 
   // Populate the map with a background tile layer
