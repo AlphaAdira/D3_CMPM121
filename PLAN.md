@@ -64,6 +64,6 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 - [x] Edit craftable items (no longer rectangles with numbers)
 - [x] Edit spawn frequencies of tokens
 - [x] customize tilelayer to fit design vision
-- [ ] add home-base feature that gets placed where player starts
+- [x] add home-base feature that gets placed where player starts
 - [ ] change win condition to match design vision (bring enough loot back to base)
 - [ ] add storage/strength to player carry limit (ex: weak player can't pickup token worth 4 points)

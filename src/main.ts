@@ -11,6 +11,9 @@ import "./_leafletWorkaround.ts"; // fixes for missing Leaflet images
 // Import our luck function
 import luck from "./_luck.ts";
 
+//import home base images
+import red_leaf from "./leaf-red.png";
+
 // Create basic UI elements
 
 let heldToken: number | null = null;
@@ -184,8 +187,17 @@ function updateReachRectangle() {
   }
 }
 
+const baseIcon = leaflet.icon({
+  iconUrl: red_leaf,
+
+  iconSize: [20, 50], // size of the icon
+  iconAnchor: [20, 45], // point of the icon which will correspond to marker's location
+  shadowAnchor: [4, 62], // the same for the shadow
+  popupAnchor: [-3, -76], // point from which the popup should open relative to the iconAnchor
+});
+
 function createOriginMarker(pos: leaflet.LatLng) {
-  const originMarker = leaflet.marker(pos).addTo(map);
+  const originMarker = leaflet.marker(pos, { icon: baseIcon }).addTo(map);
   originMarker.bindTooltip("origin");
 }
 
