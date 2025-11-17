@@ -17,6 +17,7 @@ import red_leaf from "./leaf-red.png";
 // Create basic UI elements
 
 let heldToken: number | null = null;
+let points = 0;
 const GAMEPLAY_ZOOM_LEVEL = 19;
 
 const controlPanelDiv = document.createElement("div");
@@ -27,6 +28,13 @@ const inventoryEl = document.createElement("div");
 inventoryEl.id = "inventory";
 inventoryEl.textContent = heldToken ? `Held: ${heldToken}` : "Held: none";
 document.body.appendChild(inventoryEl);
+
+const pointsEl = document.createElement("div");
+pointsEl.id = "points";
+pointsEl.textContent = points
+  ? `Points: ${points} / 100`
+  : "Points: none / 100";
+document.body.appendChild(pointsEl);
 
 const mapDiv = document.createElement("div");
 mapDiv.id = "map";
@@ -199,6 +207,14 @@ const baseIcon = leaflet.icon({
 function createOriginMarker(pos: leaflet.LatLng) {
   const originMarker = leaflet.marker(pos, { icon: baseIcon }).addTo(map);
   originMarker.bindTooltip("origin");
+  originMarker.on("click", () => {
+    if (heldToken) {
+      points += heldToken;
+      heldToken = null;
+      updateInventory();
+      checkWin();
+    }
+  });
 }
 
 let playerMarker: leaflet.Marker;
@@ -311,7 +327,7 @@ function setupTokenClick(
   gridJ: number,
 ) {
   token.marker.on("click", () => {
-    if (heldToken !== null && heldToken === token.value) {
+    if (heldToken !== null && heldToken === token.value && token.value < 16) {
       // Merge
       token.value += heldToken;
       heldToken = null;
@@ -347,7 +363,6 @@ function setupTokenClick(
       token.rect.remove();
       token.marker.remove();
       renderTokens.delete(key);
-      checkWin();
     }
   });
 }
@@ -412,12 +427,15 @@ function updateInventory() {
   inventoryEl.textContent = heldToken
     ? `Held: Token with value of ${heldToken}`
     : "Held: none";
+  pointsEl.textContent = points
+    ? `Points: ${points} / 100`
+    : "Points: none / 100";
 }
 
 function checkWin() {
-  if (heldToken !== null && heldToken >= 12) {
+  if (points !== null && points >= 100) {
     alert(
-      `"🎉 You win! Token value: ${heldToken}`,
+      `"🎉 You win! Token value: ${points}`,
     );
     stopGeolocationTracking();
     startNewGame();
@@ -431,6 +449,7 @@ startGeolocationTracking();
 function saveGameState() {
   const state = {
     heldToken,
+    points,
     startLat: START_LATLNG?.lat,
     startLng: START_LATLNG?.lng,
     playerLat: PLAYER_LATLNG?.lat,
@@ -451,6 +470,7 @@ function loadGameState() {
     console.log("loaded state");
     const state = JSON.parse(saved);
     heldToken = state.heldToken ?? null;
+    points = state.points ?? null;
     updateInventory(); // Keep UI in sync
     if (state.startLat && state.startLng) {
       START_LATLNG = leaflet.latLng(state.startLat, state.startLng);
