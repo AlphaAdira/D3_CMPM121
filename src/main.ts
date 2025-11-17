@@ -53,6 +53,13 @@ eastBtn.id = "east";
 eastBtn.textContent = "➡️";
 document.body.append(eastBtn);
 
+document.body.appendChild(document.createElement("br"));
+
+const newGameBtn = document.createElement("button");
+newGameBtn.id = "newGame";
+newGameBtn.textContent = "✨ New Game";
+document.body.appendChild(newGameBtn);
+
 let START_LATLNG: leaflet.LatLng | null = null;
 let PLAYER_LATLNG: leaflet.LatLng | null = null;
 let watchId: number | null = null;
@@ -398,6 +405,51 @@ const North = document.getElementById("north");
 const South = document.getElementById("south");
 const East = document.getElementById("east");
 const West = document.getElementById("west");
+const NewGame = document.getElementById("newGame");
+
+NewGame!.addEventListener("click", newGameFunction);
+function newGameFunction() {
+  const confirmed = confirm("Start a new game? Your progress will be lost!");
+  if (confirmed) startNewGame();
+}
+
+function startNewGame() {
+  // Stop current geolocation tracking if active
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+
+  // Clear stored state
+  localStorage.removeItem("d3-game-state");
+  heldToken = null;
+  PLAYER_LATLNG = null;
+  START_LATLNG = null;
+
+  // Reset tracking vars
+  prevCenterI = null;
+  prevCenterJ = null;
+
+  // Clear maps
+  cellMemory.clear();
+  renderCache.forEach((token) => {
+    token.rect.remove();
+    token.marker.remove();
+  });
+  renderCache.clear();
+
+  // Remove UI elements that may persist
+  if (reachRect) {
+    reachRect.remove();
+    reachRect = null;
+  }
+
+  // Update UI
+  updateInventory();
+
+  // Restart geolocation
+  startGeolocationTracking();
+}
 
 North!.addEventListener("click", northFunction);
 function northFunction() {
