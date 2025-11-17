@@ -242,7 +242,7 @@ function createTokenAt(i: number, j: number): Token | null {
       return null; // No token allowed
     }
     sendValue = state.value;
-  } else if (luck(`cell-${i}-${j}`) >= 0.3) {
+  } else if (luck(`cell-${i}-${j}`) >= 0.1) {
     return null;
   }
 
@@ -364,7 +364,7 @@ function hasToken(i: number, j: number): boolean {
     return state.hasToken;
   }
   // If not in memory
-  return luck(`cell-${i}-${j}`) < 0.3;
+  return luck(`cell-${i}-${j}`) < 0.1;
 }
 
 function updateInventory() {
