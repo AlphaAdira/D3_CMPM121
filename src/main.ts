@@ -86,13 +86,13 @@ function startGeolocationTracking() {
       // ✅ Set on first update
       if (START_LATLNG === null) {
         START_LATLNG = latLng;
-        PLAYER_LATLNG = latLng;
 
         // 🟢 Initialize ONLY here
         initializeMap(START_LATLNG);
         createOriginMarker(START_LATLNG);
         createPlayerMarker(START_LATLNG);
       }
+      PLAYER_LATLNG = latLng;
 
       // Always update player movement
       updatePlayer(latitude, longitude);
@@ -379,6 +379,7 @@ function checkWin() {
       `"🎉 You win! Token value: ${heldToken}`,
     );
     stopGeolocationTracking();
+    startNewGame();
   }
 }
 
@@ -490,10 +491,43 @@ function toggleControls() {
 
   if (usingGeolocation) {
     toggleButton.textContent = "📍 Geolocation ON";
+    if (PLAYER_LATLNG) {
+      syncPositionToGeolocation();
+    }
     startGeolocationTracking();
   } else {
     toggleButton.textContent = "⚙️ Buttons ON";
     stopGeolocationTracking();
+  }
+}
+// Add this function to synchronize the position
+function syncPositionToGeolocation() {
+  // This simulates a geolocation update
+  if (watchId !== null) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const latLng = leaflet.latLng(latitude, longitude);
+
+        if (START_LATLNG === null) {
+          START_LATLNG = latLng;
+          initializeMap(START_LATLNG);
+          createOriginMarker(START_LATLNG);
+          createPlayerMarker(START_LATLNG);
+          updateReachRectangle();
+        }
+
+        PLAYER_LATLNG = latLng;
+        playerMarker.setLatLng(PLAYER_LATLNG);
+        map.setView(PLAYER_LATLNG);
+
+        removeTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
+        addTokens(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng);
+        updateReachRectangle();
+      },
+      null,
+      { maximumAge: 0 },
+    );
   }
 }
 
@@ -501,25 +535,25 @@ toggleButton.addEventListener("click", toggleControls);
 
 North!.addEventListener("click", northFunction);
 function northFunction() {
-  if (!usingGeolocation || !PLAYER_LATLNG) return;
+  if (usingGeolocation || !PLAYER_LATLNG) return;
   updatePlayer(PLAYER_LATLNG.lat + CELL_SIZE, PLAYER_LATLNG.lng);
 }
 
 South!.addEventListener("click", southFunction);
 function southFunction() {
-  if (!usingGeolocation || !PLAYER_LATLNG) return;
+  if (usingGeolocation || !PLAYER_LATLNG) return;
   updatePlayer(PLAYER_LATLNG.lat - CELL_SIZE, PLAYER_LATLNG.lng);
 }
 
 East!.addEventListener("click", eastFunction);
 function eastFunction() {
-  if (!usingGeolocation || !PLAYER_LATLNG) return;
+  if (usingGeolocation || !PLAYER_LATLNG) return;
   updatePlayer(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng + CELL_SIZE);
 }
 
 West!.addEventListener("click", westFunction);
 function westFunction() {
-  if (!usingGeolocation || !PLAYER_LATLNG) return;
+  if (usingGeolocation || !PLAYER_LATLNG) return;
   updatePlayer(PLAYER_LATLNG.lat, PLAYER_LATLNG.lng - CELL_SIZE);
 }
 
