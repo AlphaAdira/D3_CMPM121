@@ -51,8 +51,6 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 
 ### Steps
 
-- [ ] Edit craftable items (no longer rectangles with numbers)
-- [ ] Edit spawn frequencies of tokens
 - [x] use geolocation API to track player location
 - [x] encapsulate the Geolocation API behind a simple interface (Facade design pattern)
 - [ ] localStorage API should be used to persist game state across page loads
@@ -63,6 +61,8 @@ The player gets dropped into an adventure game. They need to collect [tokens] fr
 
 ### Steps to get closer to Design Vision
 
+- [ ] Edit craftable items (no longer rectangles with numbers)
+- [ ] Edit spawn frequencies of tokens
 - [ ] customize map to fit design vision
 - [ ] add home-base feature that gets placed where player starts
 - [ ] change win condition to match design vision (bring enough loot back to base)
